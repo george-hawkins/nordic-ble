@@ -1,8 +1,6 @@
-#include "BleUart.h"
-
-#include "ble_echo.h"
-
 #include <SPI.h>
+#include "BleStream.h"
+#include "ble_echo.h"
 
 const int8_t REQN_PIN = 10;
 const int8_t RDYN_PIN = 2;

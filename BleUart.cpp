@@ -6,9 +6,9 @@
 
 // Get the service pipe data created in nRFGo Studio.
 #ifdef SERVICES_PIPE_TYPE_MAPPING_CONTENT
-	static services_pipe_type_mapping_t services_pipe_type_mapping[] = SERVICES_PIPE_TYPE_MAPPING_CONTENT;
+static services_pipe_type_mapping_t services_pipe_type_mapping[] = SERVICES_PIPE_TYPE_MAPPING_CONTENT;
 #else
-	static services_pipe_type_mapping_t* services_pipe_type_mapping = NULL;
+static services_pipe_type_mapping_t* services_pipe_type_mapping = NULL;
 #define NUMBER_OF_PIPES 0
 #endif
 
@@ -197,6 +197,15 @@ void BleUart::startAdvertising() {
 bool BleUart::write(const uint8_t* buffer, size_t len) {
 	assert(len <= getMaxWriteLen());
 
+    if (BLE_DEBUG) {
+		Serial.print(F("\tWriting out to BTLE:"));
+		for (uint8_t i = 0; i < len; i++) {
+			Serial.print(F(" 0x"));
+			Serial.print(buffer[i], HEX);
+		}
+		Serial.println();
+    }
+
 	bool available = lib_aci_is_pipe_available(&aci_state, PIPE_UART_OVER_BTLE_UART_TX_TX);
 
 	if (available) {
@@ -208,54 +217,4 @@ bool BleUart::write(const uint8_t* buffer, size_t len) {
 	}
 
 	return available;
-}
-
-void BleUart::setObserver(ReceivedObserver* receivedObserver) {
-	this->receivedObserver = receivedObserver;
-}
-
-// ---------------------------------------------------------------------
-
-BleStream::BleStream(BleUart* uart) : uart(uart), rx_buffer(rx_intern_buffer, RX_BUFFER_SIZE) {
-	uart->setObserver(this);
-}
-
-void BleStream::received(const uint8_t* buffer, size_t len) {
-    for (int i = 0; i < len; i++) {
-    	if (!rx_buffer.add(buffer[i])) {
-            // If the buffer is full just discard the data.
-			Serial.print("Discarding 0x");
-			Serial.println(buffer[i], HEX);
-		}
-    }
-}
-
-size_t BleStream::write(uint8_t buffer) {
-	return uart->write(&buffer, 1) ? 1 : 0;
-}
-
-size_t BleStream::write(const uint8_t* buffer, size_t len) {
-    if (BLE_DEBUG) {
-		Serial.print(F("\tWriting out to BTLE:"));
-		for (uint8_t i = 0; i < len; i++) {
-			Serial.print(F(" 0x"));
-			Serial.print(buffer[i], HEX);
-		}
-		Serial.println();
-    }
-
-    const size_t max_len = uart->getMaxWriteLen();
-    uint8_t sent = 0;
-
-    // Note: this logic will loop forever if the data can't be completely sent.
-    while (len) { // Send in chunks
-        size_t chunk_len = len < max_len ? len : max_len;
-
-        if (uart->write((buffer + sent), chunk_len)) {
-            len -= chunk_len;
-            sent += chunk_len;
-        }
-    }
-
-    return sent;
 }
