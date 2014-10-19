@@ -7,11 +7,11 @@ typedef struct {
 } aci_evt_opcode_name_map_entry_t;
 
 static const char ACI_EVT_INVALID_STR[] PROGMEM = "ACI_EVT_INVALID";
-static const char ACI_EVT_DEVICE_STARTED_STR[] PROGMEM = "ACI_EVT_DEVICE_STARTED (advertising started)";
+static const char ACI_EVT_DEVICE_STARTED_STR[] PROGMEM = "ACI_EVT_DEVICE_STARTED";
 static const char ACI_EVT_ECHO_STR[] PROGMEM = "ACI_EVT_ECHO";
 static const char ACI_EVT_HW_ERROR_STR[] PROGMEM = "ACI_EVT_HW_ERROR";
 static const char ACI_EVT_CMD_RSP_STR[] PROGMEM = "ACI_EVT_CMD_RSP";
-static const char ACI_EVT_CONNECTED_STR[] PROGMEM = "ACI_EVT_CONNECTED (connected)";
+static const char ACI_EVT_CONNECTED_STR[] PROGMEM = "ACI_EVT_CONNECTED";
 static const char ACI_EVT_DISCONNECTED_STR[] PROGMEM = "ACI_EVT_DISCONNECTED (disconnected or advertising timed out)";
 static const char ACI_EVT_BOND_STATUS_STR[] PROGMEM = "ACI_EVT_BOND_STATUS";
 static const char ACI_EVT_PIPE_STATUS_STR[] PROGMEM = "ACI_EVT_PIPE_STATUS";

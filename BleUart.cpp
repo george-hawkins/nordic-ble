@@ -23,13 +23,6 @@ static aci_state_t aci_state; // ACI state data.
 static hal_aci_evt_t aci_data; // Command buffer.
 static bool timing_change_done = false;
 
-// TODO: would this make a good class - with buffer size as an argument. Cf size diff class and non-class version.
-// This is the UART RX buffer, which we manage internally when data is available.
-const size_t RX_BUFFER_SIZE = 64;
-uint8_t rx_buffer[RX_BUFFER_SIZE];
-uint16_t rx_buffer_head = 0;
-uint16_t rx_buffer_tail = 0;
-
 // TODO:
 // Make this a class that doesn't inherit from Stream.
 // Make rx_callback a mandatory ctor argument.
@@ -87,7 +80,7 @@ void BleUart::begin(int8_t reqn_pin, int8_t rdyn_pin, int8_t reset_pin) {
     aci_state.aci_pins.interrupt_number       = 1;
 
     // Configure the host pins and SPI - the nRF8001 itself is only setup later by do_aci_setup(...).
-    lib_aci_init(&aci_state, true);
+    lib_aci_init(&aci_state, false);
 }
 
 // Handles low level ACI events.
@@ -106,14 +99,16 @@ void BleUart::pollACI() {
         case ACI_EVT_DEVICE_STARTED:
             aci_state.data_credit_total = aci_evt.params.device_started.credit_available;
             switch (aci_evt.params.device_started.device_mode) {
-            case ACI_DEVICE_SETUP:
+            case ACI_DEVICE_SETUP: {
                 // Device is in setup mode.
-                if (ACI_STATUS_TRANSACTION_COMPLETE != do_aci_setup(&aci_state)) {
-                    if (BLE_DEBUG) {
-                        Serial.println(F("Error in ACI Setup"));
-                    }
+            	uint8_t status = do_aci_setup(&aci_state);
+                if (status != SETUP_SUCCESS) {
+					Serial.print(F("ACI setup failed with status 0x"));
+					Serial.println(status, HEX);
+					abort();
                 }
                 break;
+            }
 
             case ACI_DEVICE_STANDBY:
                 if (device_name[0] != 0x00) {
@@ -127,12 +122,11 @@ void BleUart::pollACI() {
         case ACI_EVT_CMD_RSP:
             // If an ACI command response event comes with an error then stop.
             if (ACI_STATUS_SUCCESS != aci_evt.params.cmd_rsp.cmd_status) {
-                // ACI ReadDynamicData and ACI WriteDynamicData will have status codes of
-                // TRANSACTION_CONTINUE and TRANSACTION_COMPLETE
+                // ACI ReadDynamicData and ACI WriteDynamicData will have status codes of TRANSACTION_CONTINUE and TRANSACTION_COMPLETE
                 // all other ACI commands will have status code of ACI_STATUS_SUCCESS for a successful command.
                 if (BLE_DEBUG) {
-                    Serial.print(F("ACI command "));
-                    Serial.println(aci_evt.params.cmd_rsp.cmd_opcode, HEX);
+                    Serial.print(F("ACI command 0x"));
+                    Serial.print(aci_evt.params.cmd_rsp.cmd_opcode, HEX);
                     Serial.println(F(" failed - halting MCU."));
                 }
                 abort();
@@ -240,6 +234,13 @@ BleStream::BleStream(BleUart* uart) : uart(uart) {
 	uart->setObserver(this);
 }
 
+// TODO: would this make a good class - with buffer size as an argument. Cf size diff class and non-class version.
+// This is the UART RX buffer, which we manage internally when data is available.
+const size_t RX_BUFFER_SIZE = 64;
+uint8_t rx_buffer[RX_BUFFER_SIZE];
+uint16_t rx_buffer_head = 0;
+uint16_t rx_buffer_tail = 0;
+
 int BleStream::available() {
     return (uint16_t) (RX_BUFFER_SIZE + rx_buffer_head - rx_buffer_tail) % RX_BUFFER_SIZE;
 }
@@ -288,7 +289,7 @@ size_t BleStream::write(uint8_t buffer) {
 	return uart->write(&buffer, 0, 1) ? 1 : 0;
 }
 
-void BleStream::received(uint8_t* buffer, uint8_t len) {
+void BleStream::received(const uint8_t* buffer, size_t len) {
     for (int i = 0; i < len; i++) {
         uint16_t new_head = (uint16_t) (rx_buffer_head + 1) % RX_BUFFER_SIZE;
 

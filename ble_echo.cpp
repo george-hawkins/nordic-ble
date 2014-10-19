@@ -23,7 +23,7 @@ BleStream ble_stream(&ble_uart);
 void setup() {
 	Serial.begin(9600);
 	while (!Serial); // Wait for serial to become available on Leonardo and similar boards.
-	Serial.println(F("nRF8001 echo demo..."));
+	Serial.println(F("nRF8001 echo demo 0.2..."));
 
 	ble_uart.begin(REQN_PIN, RDYN_PIN, RESET_PIN);
 //	uart.begin(REQN_PIN, RDYN_PIN, RESET_PIN); // Start BLE advertising.
