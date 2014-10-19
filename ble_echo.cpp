@@ -8,31 +8,19 @@ const int8_t REQN_PIN = 10;
 const int8_t RDYN_PIN = 2;
 const int8_t RESET_PIN = 9;
 
-//static class EchoUart : public BleUart {
-//public:
-//	EchoUart() { }
-//
-//	virtual void receivedCallback(uint8_t* buffer, uint8_t len) {
-//		write(buffer, 0, len); // Just echo the same data back.
-//	}
-//} uart;
-
 BleUart ble_uart;
 BleStream ble_stream(&ble_uart);
 
 void setup() {
 	Serial.begin(9600);
 	while (!Serial); // Wait for serial to become available on Leonardo and similar boards.
-	Serial.println(F("nRF8001 echo demo 0.2..."));
+	Serial.println(F("nRF8001 echo demo 0.3..."));
 
-	ble_uart.begin(REQN_PIN, RDYN_PIN, RESET_PIN);
-//	uart.begin(REQN_PIN, RDYN_PIN, RESET_PIN); // Start BLE advertising.
+	ble_uart.begin(REQN_PIN, RDYN_PIN, RESET_PIN); // Start BLE advertising.
 }
 
 void loop() {
-//	uart.pollACI(); // Continually poll for new events.
-
-	ble_uart.pollACI();
+	ble_uart.pollACI(); // Poll continuously poll for new events.
 
 	int size = ble_stream.available();
 
