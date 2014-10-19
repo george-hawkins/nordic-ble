@@ -1,0 +1,11 @@
+.cproject
+.project
+.settings/
+arduino/
+junk/
+Libraries/
+Release/
+spec.d
+uart/services.h
+uart/services_lock.h
+uart/ublue_setup.gen.out.txt
