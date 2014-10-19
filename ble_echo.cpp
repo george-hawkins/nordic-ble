@@ -17,21 +17,22 @@ const int8_t RESET_PIN = 9;
 //	}
 //} uart;
 
-BleStream ble_stream;
+BleUart ble_uart;
+BleStream ble_stream(&ble_uart);
 
 void setup() {
 	Serial.begin(9600);
 	while (!Serial); // Wait for serial to become available on Leonardo and similar boards.
 	Serial.println(F("nRF8001 echo demo..."));
 
-	ble_stream.begin(REQN_PIN, RDYN_PIN, RESET_PIN);
+	ble_uart.begin(REQN_PIN, RDYN_PIN, RESET_PIN);
 //	uart.begin(REQN_PIN, RDYN_PIN, RESET_PIN); // Start BLE advertising.
 }
 
 void loop() {
 //	uart.pollACI(); // Continually poll for new events.
 
-	ble_stream.pollACI();
+	ble_uart.pollACI();
 
 	int size = ble_stream.available();
 

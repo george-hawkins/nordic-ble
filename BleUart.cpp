@@ -172,7 +172,9 @@ void BleUart::pollACI() {
             break;
 
         case ACI_EVT_DATA_RECEIVED:
-            receivedCallback(aci_evt.params.data_received.rx_data.aci_data, aci_evt.len - 2);
+        	if (receivedObserver != NULL) {
+        		receivedObserver->received(aci_evt.params.data_received.rx_data.aci_data, aci_evt.len - 2);
+        	}
             break;
 
         case ACI_EVT_DATA_CREDIT:
@@ -226,9 +228,17 @@ bool BleUart::write(uint8_t* buffer, uint8_t offset, size_t len) {
 	return available;
 }
 
+void BleUart::setObserver(ReceivedObserver* receivedObserver) {
+	this->receivedObserver = receivedObserver;
+}
+
 // -------------------------------------------------------------------------------------------------------
 // Stream stuff
 // -------------------------------------------------------------------------------------------------------
+
+BleStream::BleStream(BleUart* uart) : uart(uart) {
+	uart->setObserver(this);
+}
 
 int BleStream::available() {
     return (uint16_t) (RX_BUFFER_SIZE + rx_buffer_head - rx_buffer_tail) % RX_BUFFER_SIZE;
@@ -265,7 +275,7 @@ size_t BleStream::write(const uint8_t* buffer, size_t len) {
 // TODO: make ACI_PIPE_TX_DATA_MAX_LEN a getable value on separate BLE logic class.
         bytesThisPass = len < ACI_PIPE_TX_DATA_MAX_LEN ? len : ACI_PIPE_TX_DATA_MAX_LEN;
 
-        if (BleUart::write(const_cast<uint8_t*>(buffer), sent, bytesThisPass)) {
+        if (uart->write(const_cast<uint8_t*>(buffer), sent, bytesThisPass)) {
             len -= bytesThisPass;
             sent += bytesThisPass;
         }
@@ -275,10 +285,10 @@ size_t BleStream::write(const uint8_t* buffer, size_t len) {
 }
 
 size_t BleStream::write(uint8_t buffer) {
-	return BleUart::write(&buffer, 0, 1) ? 1 : 0;
+	return uart->write(&buffer, 0, 1) ? 1 : 0;
 }
 
-void BleStream::receivedCallback(uint8_t* buffer, uint8_t len) {
+void BleStream::received(uint8_t* buffer, uint8_t len) {
     for (int i = 0; i < len; i++) {
         uint16_t new_head = (uint16_t) (rx_buffer_head + 1) % RX_BUFFER_SIZE;
 
