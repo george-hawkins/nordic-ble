@@ -1,4 +1,5 @@
 #include <SPI.h>
+#include <Streaming.h>
 #include "BleStream.h"
 #include "ble_echo.h"
 
@@ -12,7 +13,7 @@ BleStream ble_stream(&ble_uart);
 void setup() {
 	Serial.begin(9600);
 	while (!Serial); // Wait for serial to become available on Leonardo and similar boards.
-	Serial.println(F("nRF8001 echo demo 0.3..."));
+	Serial << F("nRF8001 echo demo 0.3...") << endl;
 
 	ble_uart.begin(REQN_PIN, RDYN_PIN, RESET_PIN); // Start BLE advertising.
 }
@@ -31,12 +32,7 @@ void loop() {
 }
 
 // An implementation of this method is required by the Nordic SDK.
-void __ble_assert(const char *file, uint16_t line)
-{
-  Serial.print("ERROR ");
-  Serial.print(file);
-  Serial.print(": ");
-  Serial.print(line);
-  Serial.print("\n");
-  abort();
+void __ble_assert(const char* file, uint16_t line) {
+    Serial << F("Error - ") << file << F(": ") << line << endl;
+    abort();
 }

@@ -1,3 +1,4 @@
+#include <Streaming.h>
 #include "BleStream.h"
 
 BleStream::BleStream(BleUart* uart) : uart(uart), rx_buffer(rx_intern_buffer, RX_BUFFER_SIZE) {
@@ -8,8 +9,7 @@ void BleStream::received(const uint8_t* buffer, size_t len) {
     for (int i = 0; i < len; i++) {
     	if (!rx_buffer.add(buffer[i])) {
             // If the buffer is full just discard the data.
-			Serial.print("Discarding 0x");
-			Serial.println(buffer[i], HEX);
+            Serial << F("Discarding 0x") << _HEX(buffer[i]);
 		}
     }
 }

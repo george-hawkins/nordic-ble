@@ -1,4 +1,5 @@
 #include <SPI.h>
+#include <Streaming.h>
 #include "BleUart.h"
 #include <aci_setup.h>
 #include <assert.h>
@@ -91,9 +92,8 @@ void BleUart::pollACI() {
                 // Device is in setup mode.
             	uint8_t status = do_aci_setup(&aci_state);
                 if (status != SETUP_SUCCESS) {
-					Serial.print(F("ACI setup failed with status 0x"));
-					Serial.println(status, HEX);
-					abort();
+                    Serial << F("ACI setup failed with status 0x") << _HEX(status) << endl;
+                    abort();
                 }
                 break;
             }
@@ -112,11 +112,7 @@ void BleUart::pollACI() {
             if (ACI_STATUS_SUCCESS != aci_evt.params.cmd_rsp.cmd_status) {
                 // ACI ReadDynamicData and ACI WriteDynamicData will have status codes of TRANSACTION_CONTINUE and TRANSACTION_COMPLETE
                 // all other ACI commands will have status code of ACI_STATUS_SUCCESS for a successful command.
-                if (BLE_DEBUG) {
-                    Serial.print(F("ACI command 0x"));
-                    Serial.print(aci_evt.params.cmd_rsp.cmd_opcode, HEX);
-                    Serial.println(F(" failed - halting MCU."));
-                }
+                Serial << F("ACI command 0x") << _HEX(aci_evt.params.cmd_rsp.cmd_opcode) << F(" failed") << endl;
                 abort();
             }
             if (ACI_CMD_GET_DEVICE_VERSION == aci_evt.params.cmd_rsp.cmd_opcode) {
@@ -165,20 +161,14 @@ void BleUart::pollACI() {
 
         case ACI_EVT_PIPE_ERROR:
             // See the appendix in the nRF8001 Product Specification for details on the error codes.
-            if (BLE_DEBUG) {
-                Serial.print(F("ACI_EVT_PIPE_ERROR: pipe="));
-                Serial.print(aci_evt.params.pipe_error.pipe_number, DEC);
-                Serial.print(F(", error code=0x"));
-                Serial.println(aci_evt.params.pipe_error.error_code, HEX);
-            }
+            Serial << F("ACI_EVT_PIPE_ERROR: pipe=") << aci_evt.params.pipe_error.pipe_number << F(", error code=0x") << _HEX(aci_evt.params.pipe_error.error_code) << endl;
 
             // Increment the credit available as the data packet was not sent.
             aci_state.data_credit_available++;
             break;
 
         default:
-            Serial.print(F("Unhandled event with opcode 0x"));
-            Serial.println(aci_evt.evt_opcode, HEX);
+            Serial << F("Unhandled event with opcode 0x") << _HEX(aci_evt.evt_opcode) << endl;
             break;
         }
     } else {
@@ -198,12 +188,11 @@ bool BleUart::write(const uint8_t* buffer, size_t len) {
 	assert(len <= getMaxWriteLen());
 
     if (BLE_DEBUG) {
-		Serial.print(F("\tWriting out to BTLE:"));
+        Serial << F("Sending to BLE UART TX:");
 		for (uint8_t i = 0; i < len; i++) {
-			Serial.print(F(" 0x"));
-			Serial.print(buffer[i], HEX);
+                        Serial << F(" 0x") << _HEX(buffer[i]);
 		}
-		Serial.println();
+		Serial << endl;
     }
 
 	bool available = lib_aci_is_pipe_available(&aci_state, PIPE_UART_OVER_BTLE_UART_TX_TX);
