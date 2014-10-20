@@ -1,4 +1,4 @@
-#include "Arduino.h"
+#include <avr/pgmspace.h>
 #include "debug.h"
 
 typedef struct {
