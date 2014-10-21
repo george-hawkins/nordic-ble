@@ -3,7 +3,7 @@
 #include "BleUart.h"
 #include <aci_setup.h>
 #include <assert.h>
-#include "debug.h"
+#include "print_aci_evt.h"
 
 // Get the service pipe data created in nRFGo Studio.
 #ifdef SERVICES_PIPE_TYPE_MAPPING_CONTENT

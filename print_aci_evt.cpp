@@ -1,6 +1,6 @@
 #include <avr/pgmspace.h>
 #include <Streaming.h>
-#include "debug.h"
+#include "print_aci_evt.h"
 
 typedef struct {
     aci_evt_opcode_t key;
