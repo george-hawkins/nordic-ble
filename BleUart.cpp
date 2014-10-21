@@ -13,6 +13,7 @@ static services_pipe_type_mapping_t* services_pipe_type_mapping = NULL;
 #define NUMBER_OF_PIPES 0
 #endif
 
+// Flipping the second argument of lib_aci_init(..., debug) below to true also produces useful debug output.
 const bool BLE_DEBUG = true;
 
 // The SDK requires that the nRF8001 setup to be in flash (and this saves RAM).
@@ -78,7 +79,9 @@ void BleUart::pollACI() {
     if (lib_aci_event_get(&aci_state, &aci_data)) {
         aci_evt_t& aci_evt = aci_data.evt;
 
-        printAciEvtOpcode(aci_evt.evt_opcode);
+        if (BLE_DEBUG) {
+        	printAciEvtOpcode(aci_evt.evt_opcode);
+        }
 
         // Note: the term credit seen at various points in this method is related to flow control.
         // For more information see aci.h and the "Flow control" section of the nRF8001 Product Specification.

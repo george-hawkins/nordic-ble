@@ -5,3 +5,5 @@ However the Nordic BLE SDK has been replaced with the latest available from http
 The nRFgo Studio generated XML file is the one from the Adafruit repository.
 
 However the .h files etc. were regenerated using the latest version nRFgo Studio. See uart/README.md for more details.
+
+The usability of Serial is improved by the Streaming library from http://arduiniana.org/libraries/streaming/
