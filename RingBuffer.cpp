@@ -1,7 +1,7 @@
 #include "RingBuffer.h"
 
 int16_t RingBuffer::remove() {
-    int c = peek();
+    const int c = peek();
 
     if (c != -1) {
         tail = (tail + 1) % size;
@@ -11,7 +11,7 @@ int16_t RingBuffer::remove() {
 }
 
 bool RingBuffer::add(uint8_t c) {
-    uint16_t new_head = (head + 1) % size;
+    const uint16_t new_head = (head + 1) % size;
 
     if (new_head == tail) {
         return false;

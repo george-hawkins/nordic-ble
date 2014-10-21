@@ -22,7 +22,7 @@ private:
 
     aci_state_t aci_state; // ACI state data.
     bool timing_change_done = false;
-    ReceivedObserver* receivedObserver = NULL;
+    ReceivedObserver* received_observer = NULL;
 
     void startAdvertising();
 
@@ -36,7 +36,7 @@ public:
     bool write(const uint8_t* buffer, size_t len);
     size_t getMaxWriteLen() { return ACI_PIPE_TX_DATA_MAX_LEN; }
 
-    void setObserver(ReceivedObserver* receivedObserver) { this->receivedObserver = receivedObserver; }
+    void setObserver(ReceivedObserver* received_observer) { this->received_observer = received_observer; }
 };
 
 #endif /* BLE_UART_H_ */

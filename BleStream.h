@@ -17,7 +17,7 @@ public:
     virtual ~BleStream() { }
 
     // Print methods.
-    virtual size_t write(const uint8_t* buffer, size_t size);
+    virtual size_t write(const uint8_t* buffer, size_t len);
     virtual size_t write(uint8_t buffer);
     // Overriding Print:print(const __FlashStringHelper*) would also make sense as the default
     // implementation doesn't use the chunking write method - however it is not a virtual method.

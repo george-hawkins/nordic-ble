@@ -19,23 +19,13 @@ const bool BLE_DEBUG = true;
 // The SDK requires that the nRF8001 setup to be in flash (and this saves RAM).
 const hal_aci_data_t setup_msgs[NB_SETUP_MESSAGES] PROGMEM = SETUP_MESSAGES_CONTENT;
 
-// TODO:
-// Use this.xyz = xyz rather than alpha_beta = alphaBeta scheme.
-// Rename badly named variables like rx_event.
-// Look at how you pulled in printf previously.
-// HAL_IO_RADIO_RESET etc. have to be C style data, but all the other stuff should be class data.
-// Get rid of those back-to-front conditions, e.g. ACI_STATUS_TRANSACTION_COMPLETE != do_aci_setup(&aci_state).
-// Look at unused #defines in service.h
-// Use debug.cpp or get rid of it - get rid of callbackEcho.cpp.
-// Put into git repo.
-
 // Constructor for the UART service.
-BleUart::BleUart(const char* deviceName, uint16_t adv_timeout, uint16_t adv_interval) : adv_timeout(adv_timeout), adv_interval(adv_interval) {
+BleUart::BleUart(const char* device_name, uint16_t adv_timeout, uint16_t adv_interval) : adv_timeout(adv_timeout), adv_interval(adv_interval) {
     // The GAP Device Name pipe size can be changed but an upper limit is set by the fixed advertising packet size.
-    assert(strlen(deviceName) <= PIPE_GAP_DEVICE_NAME_SET_MAX_SIZE);
+    assert(strlen(device_name) <= PIPE_GAP_DEVICE_NAME_SET_MAX_SIZE);
 
-    memset(device_name, 0x00, sizeof(device_name));
-    memcpy(device_name, deviceName, strlen(deviceName));
+    memset(this->device_name, 0x00, sizeof(device_name));
+    memcpy(this->device_name, device_name, strlen(device_name));
 }
 
 //    Configures the nRF8001 and starts advertising the UART Service
@@ -112,13 +102,13 @@ void BleUart::pollACI() {
 
         case ACI_EVT_CMD_RSP:
             // If an ACI command response event comes with an error then stop.
-            if (ACI_STATUS_SUCCESS != aci_evt.params.cmd_rsp.cmd_status) {
+            if (aci_evt.params.cmd_rsp.cmd_status != ACI_STATUS_SUCCESS) {
                 // ACI ReadDynamicData and ACI WriteDynamicData will have status codes of TRANSACTION_CONTINUE and TRANSACTION_COMPLETE
                 // all other ACI commands will have status code of ACI_STATUS_SUCCESS for a successful command.
                 Serial << F("ACI command 0x") << _HEX(aci_evt.params.cmd_rsp.cmd_opcode) << F(" failed") << endl;
                 abort();
             }
-            if (ACI_CMD_GET_DEVICE_VERSION == aci_evt.params.cmd_rsp.cmd_opcode) {
+            if (aci_evt.params.cmd_rsp.cmd_opcode == ACI_CMD_GET_DEVICE_VERSION) {
                 // Write the device version information to the pipe corresponding to the Hardware Revision String characteristic.
                 lib_aci_set_local_data(&aci_state,
                 PIPE_DEVICE_INFORMATION_HARDWARE_REVISION_STRING_SET,
@@ -136,8 +126,8 @@ void BleUart::pollACI() {
 
         case ACI_EVT_PIPE_STATUS:
             if (!timing_change_done && lib_aci_is_pipe_available(&aci_state, PIPE_UART_OVER_BTLE_UART_TX_TX)) {
-                // Change the timing on the link as specified in the nRFgo studio -> nRF8001 conf. -> GAP.
-                // Used to increase or decrease bandwidth
+                // Change the timing on the link as specified in the nRFgo Studio -> nRF8001 conf. -> GAP.
+                // Used to increase or decrease bandwidth.
                 lib_aci_change_timing_GAP_PPCP();
 
                 timing_change_done = true;
@@ -153,8 +143,8 @@ void BleUart::pollACI() {
             break;
 
         case ACI_EVT_DATA_RECEIVED:
-            if (receivedObserver != NULL) {
-                receivedObserver->received(aci_evt.params.data_received.rx_data.aci_data, aci_evt.len - 2);
+            if (received_observer != NULL) {
+                received_observer->received(aci_evt.params.data_received.rx_data.aci_data, aci_evt.len - 2);
             }
             break;
 
@@ -209,4 +199,10 @@ bool BleUart::write(const uint8_t* buffer, size_t len) {
     }
 
     return available;
+}
+
+// An implementation of this method is required by the Nordic SDK.
+void __ble_assert(const char* file, uint16_t line) {
+    Serial << F("Error - ") << file << F(": ") << line << endl;
+    abort();
 }

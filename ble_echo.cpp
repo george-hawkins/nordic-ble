@@ -30,9 +30,3 @@ void loop() {
         ble_stream.write(buffer, size);
     }
 }
-
-// An implementation of this method is required by the Nordic SDK.
-void __ble_assert(const char* file, uint16_t line) {
-    Serial << F("Error - ") << file << F(": ") << line << endl;
-    abort();
-}

@@ -45,7 +45,7 @@ const aci_evt_opcode_name_map_entry_t aci_evt_opcode_name_map[] PROGMEM = {
 
 const size_t aci_evt_opcode_name_map_len = sizeof(aci_evt_opcode_name_map) / sizeof(aci_evt_opcode_name_map_entry_t);
 
-#define F_ADDR(s) (reinterpret_cast<const __FlashStringHelper*>(s))
+#define F_ADDR(ptr) (reinterpret_cast<const __FlashStringHelper*>(ptr))
 
 void printAciEvtOpcode(aci_evt_opcode_t event) {
     aci_evt_opcode_name_map_entry_t entry;
