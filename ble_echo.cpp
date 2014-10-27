@@ -19,7 +19,7 @@ void setup() {
 }
 
 void loop() {
-    ble_uart.pollACI(); // Poll continuously for new events.
+    ble_uart.pollAci(); // Poll continuously for new events.
 
     int size = ble_stream.available();
 
