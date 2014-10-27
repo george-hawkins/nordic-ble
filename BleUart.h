@@ -14,6 +14,16 @@ struct ReceivedObserver {
     virtual void received(const uint8_t* buffer, size_t len) = 0;
 };
 
+class BleTimingManager {
+private:
+    bool change_done = false;
+
+public:
+    void reset() { change_done = false; }
+
+    void changeTiming(aci_state_t* aci_state);
+};
+
 class BleUart {
 private:
     const uint16_t adv_timeout;
@@ -21,13 +31,13 @@ private:
     char device_name[PIPE_GAP_DEVICE_NAME_SET_MAX_SIZE + 1];
 
     aci_state_t aci_state; // ACI state data.
-    bool timing_change_done = false;
+    BleTimingManager timing_manager;
     ReceivedObserver* received_observer = NULL;
 
     void startAdvertising();
 
 public:
-    BleUart(const char* deviceName = "", uint16_t adv_timeout = 0, uint16_t adv_interval = 80);
+    BleUart(const char* device_name = "", uint16_t adv_timeout = 0, uint16_t adv_interval = 80);
     virtual ~BleUart() { }
 
     void begin(int8_t reqn_pin, int8_t rdyn_pin, int8_t reset_pin);

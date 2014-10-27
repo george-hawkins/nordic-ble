@@ -7,8 +7,8 @@ const int8_t REQN_PIN = 10;
 const int8_t RDYN_PIN = 2;
 const int8_t RESET_PIN = 9;
 
-BleUart ble_uart;
-BleStream ble_stream(&ble_uart);
+static BleUart ble_uart;
+static BleStream ble_stream(&ble_uart);
 
 void setup() {
     Serial.begin(9600);
