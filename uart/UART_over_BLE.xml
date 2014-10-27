@@ -11,10 +11,10 @@
             <Uuid BaseUUID="6e400000b5a3f393e0a9e50e24dcca9e" BaseUUIDName="Custom UART">0002</Uuid>
             <DefaultValue></DefaultValue>
             <UsePresentationFormat>0</UsePresentationFormat>
-            <UserDescription></UserDescription>
             <MaxDataLength>20</MaxDataLength>
             <AttributeLenType>2</AttributeLenType>
             <ForceOpen>false</ForceOpen>
+            <ForceEncryption>false</ForceEncryption>
             <Properties>
                 <WriteWithoutResponse>true</WriteWithoutResponse>
                 <Write>false</Write>
@@ -33,10 +33,10 @@
             <Uuid BaseUUID="6e400000b5a3f393e0a9e50e24dcca9e" BaseUUIDName="Custom UART">0003</Uuid>
             <DefaultValue></DefaultValue>
             <UsePresentationFormat>0</UsePresentationFormat>
-            <UserDescription></UserDescription>
             <MaxDataLength>20</MaxDataLength>
             <AttributeLenType>2</AttributeLenType>
             <ForceOpen>false</ForceOpen>
+            <ForceEncryption>false</ForceEncryption>
             <Properties>
                 <WriteWithoutResponse>false</WriteWithoutResponse>
                 <Write>false</Write>
@@ -47,32 +47,6 @@
             <SetPipe>false</SetPipe>
             <AckIsAuto>false</AckIsAuto>
             <PresentationFormatDescriptor Value="0000" Exponent="0" Format="1" NameSpace="01" Unit="0000"/>
-            <PeriodForReadingThisCharacteristic>0</PeriodForReadingThisCharacteristic>
-            <PeriodForProperties/>
-        </Characteristic>
-    </Service>
-    <Service Type="local" PrimaryService="true">
-        <Name>Device Information</Name>
-        <Uuid>180a</Uuid>
-        <Characteristic>
-            <Name>Hardware Revision String</Name>
-            <Uuid>2a27</Uuid>
-            <DefaultValue>0A</DefaultValue>
-            <UsePresentationFormat>0</UsePresentationFormat>
-            <UserDescription></UserDescription>
-            <MaxDataLength>9</MaxDataLength>
-            <AttributeLenType>2</AttributeLenType>
-            <ForceOpen>false</ForceOpen>
-            <Properties>
-                <WriteWithoutResponse>false</WriteWithoutResponse>
-                <Write>false</Write>
-                <Notify>false</Notify>
-                <Indicate>false</Indicate>
-                <Broadcast>false</Broadcast>
-            </Properties>
-            <SetPipe>true</SetPipe>
-            <AckIsAuto>false</AckIsAuto>
-            <PresentationFormatDescriptor Value="0000" Exponent="0" Format="25" NameSpace="01" Unit="0000"/>
             <PeriodForReadingThisCharacteristic>0</PeriodForReadingThisCharacteristic>
             <PeriodForProperties/>
         </Characteristic>
@@ -107,6 +81,9 @@
         <MaximumConnectionInterval>18</MaximumConnectionInterval>
         <SlaveLatency>0</SlaveLatency>
         <TimeoutMultipler>10</TimeoutMultipler>
+        <AddServiceUpdateCharacteristic>false</AddServiceUpdateCharacteristic>
+        <AddServiceUpdateCharacteristicPipe>false</AddServiceUpdateCharacteristicPipe>
+        <TimingChangeDelay>5</TimingChangeDelay>
         <ServiceToAdvertise>
             <Uuid BaseUUID="6e400000b5a3f393e0a9e50e24dcca9e" BaseUUIDName="Custom UART">0001</Uuid>
         </ServiceToAdvertise>

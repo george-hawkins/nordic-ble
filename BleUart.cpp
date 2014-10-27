@@ -102,45 +102,11 @@ void BleUart::pollAci() {
                 Serial << F("ACI command 0x") << _HEX(aci_evt.params.cmd_rsp.cmd_opcode) << F(" failed") << endl;
                 abort();
             }
-            if (aci_evt.params.cmd_rsp.cmd_opcode == ACI_CMD_GET_DEVICE_VERSION) {
-                // For information of the Device Information (DI) service see:
-                // * https://developer.bluetooth.org/TechnologyOverview/Pages/DIS.aspx and
-                // * https://developer.bluetooth.org/gatt/services/Pages/ServiceViewer.aspx?u=org.bluetooth.service.device_information.xml
-
-                // Most of the Nordic nRF8001 examples, in addition to the main service, include the DI service.
-                // All DI characteristics are optional and in these example just the Hardware Revision String in included.
-                // The Hardware Revision String should be a UTF8 string - however Nordic simply store the blob
-                // of bytes that make up the aci_evt_cmd_rsp_params_get_device_version_t structure in it.
-                // This isn't ideal as an arbitrary byte sequence is unlikely to be printable and is not guaranteed to be valid UTF-8:
-                // http://en.wikipedia.org/wiki/UTF-8#Invalid_byte_sequences
-                assert(sizeof(aci_evt_cmd_rsp_params_get_device_version_t) <= PIPE_DEVICE_INFORMATION_HARDWARE_REVISION_STRING_SET_MAX_SIZE);
-
-                lib_aci_set_local_data(&aci_state,
-                        PIPE_DEVICE_INFORMATION_HARDWARE_REVISION_STRING_SET,
-                        (uint8_t*)&(aci_evt.params.cmd_rsp.params.get_device_version),
-                        sizeof(aci_evt_cmd_rsp_params_get_device_version_t));
-
-                if (BLE_DEBUG) {
-                    aci_evt_cmd_rsp_params_get_device_version_t& version = aci_evt.params.cmd_rsp.params.get_device_version;
-
-                    // Three of the values are just the same values as the macro values ACI_VERSION, SETUP_FORMAT and SETUP_ID.
-                    Serial << F("Device version") <<
-                            F(": aci_version=0x") << _HEX(version.aci_version) <<
-                            F(", configuration_id=0x") << _HEX(version.configuration_id) <<
-                            F(", setup_format=0x") << _HEX(version.setup_format) <<
-                            F(", setup_id=0x") << _HEX(version.setup_id) <<
-                            F(", setup_status=0x") << _HEX(version.setup_status) <<
-                            endl;
-                }
-            }
             break;
 
         case ACI_EVT_CONNECTED:
             aci_state.data_credit_available = aci_state.data_credit_total;
             timing.reset();
-
-            // Request the device version - response comes back with cmd_opcode ACI_CMD_GET_DEVICE_VERSION (see above).
-            lib_aci_device_version();
             break;
 
         case ACI_EVT_PIPE_STATUS:
