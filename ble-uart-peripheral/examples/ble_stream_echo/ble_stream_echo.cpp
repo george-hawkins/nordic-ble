@@ -1,6 +1,6 @@
 #include <Streaming.h>
 #include "BleStream.h"
-#include "ble_echo.h"
+#include "ble_stream_echo.h"
 
 const int8_t REQN_PIN = 10;
 const int8_t RDYN_PIN = 2; // Must be an interrupt pin.
@@ -13,7 +13,7 @@ static BleStream ble_stream(ble_uart);
 void setup() {
     Serial.begin(9600);
     while (!Serial); // Wait for serial to become available on Leonardo and similar boards.
-    Serial << F("nRF8001 echo demo 0.3...") << endl;
+    Serial << F("nRF8001 echo demo...") << endl;
 
     ble_uart.begin(REQN_PIN, RDYN_PIN, RESET_PIN); // Start BLE advertising.
 }

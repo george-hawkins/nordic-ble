@@ -1,5 +1,5 @@
-#ifndef BLE_ECHO_H_
-#define BLE_ECHO_H_
+#ifndef BLE_STREAM_ECHO_H_
+#define BLE_STREAM_ECHO_H_
 #include "Arduino.h"
 
 #ifdef __cplusplus
@@ -11,4 +11,4 @@ void setup();
 } // extern "C"
 #endif
 
-#endif /* BLE_ECHO_H_ */
+#endif /* BLE_STREAM_ECHO_H_ */
