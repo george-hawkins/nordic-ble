@@ -103,7 +103,7 @@ void BleCore::pollAci() {
             // Link connection interval changed.
             break;
 
-        case ACI_EVT_DISCONNECTED:
+        case ACI_EVT_DISCONNECTED: // Disconnected or advertising timed out.
             startAdvertising();
             break;
 
