@@ -1,7 +1,6 @@
 #ifndef BLE_CORE_H_
 #define BLE_CORE_H_
 
-#include <Arduino.h>
 #include <lib_aci.h>
 #include <assert.h>
 

@@ -1,5 +1,3 @@
-#include <stddef.h>
-
 #include "BleProfile.h"
 
 aci_setup_info_t BleProfile::createSetupInfo(const hal_aci_data_t* setup_msgs, uint8_t num_setup_msgs) {

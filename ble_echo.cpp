@@ -1,4 +1,3 @@
-#include <SPI.h>
 #include <Streaming.h>
 #include "BleStream.h"
 #include "ble_echo.h"

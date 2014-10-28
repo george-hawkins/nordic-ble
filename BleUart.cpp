@@ -1,4 +1,3 @@
-#include <lib_aci.h>
 #include "BleUart.h"
 
 #include "uart/services.h"
@@ -17,4 +16,3 @@ bool BleUart::write(const uint8_t* buffer, size_t len) {
 }
 
 size_t BleUart::getMaxWriteLen() { return PIPE_UART_OVER_BTLE_UART_TX_TX_MAX_SIZE; }
-
