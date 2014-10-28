@@ -1,7 +1,7 @@
 #ifndef BLEUART_H_
 #define BLEUART_H_
 
-#include "BleProfile.h"
+#include <BleProfile.h>
 
 class BleUart: public BleProfile {
 private:
