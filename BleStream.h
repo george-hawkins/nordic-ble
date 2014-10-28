@@ -1,19 +1,20 @@
 #ifndef BLESTREAM_H_
 #define BLESTREAM_H_
 
+#include "RingBuffer.h"
 #include "BleUart.h"
 
 class BleStream: public Stream, private ReceivedObserver {
 private:
-    BleUart* const uart;
-    virtual void received(const uint8_t* buffer, size_t len);
+    BleUart& uart;
+    virtual void received(uint8_t pipe, const uint8_t* buffer, size_t len);
 
     const static size_t RX_BUFFER_SIZE = 64;
     uint8_t rx_intern_buffer[RX_BUFFER_SIZE];
     RingBuffer rx_buffer;
 
 public:
-    BleStream(BleUart* uart);
+    BleStream(BleUart& uart);
     virtual ~BleStream() { }
 
     // Print methods.

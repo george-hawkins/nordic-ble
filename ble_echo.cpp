@@ -4,11 +4,12 @@
 #include "ble_echo.h"
 
 const int8_t REQN_PIN = 10;
-const int8_t RDYN_PIN = 2;
+const int8_t RDYN_PIN = 2; // Must be an interrupt pin.
 const int8_t RESET_PIN = 9;
 
-static BleUart ble_uart;
-static BleStream ble_stream(&ble_uart);
+static BleCore ble_core;
+static BleUart ble_uart(ble_core);
+static BleStream ble_stream(ble_uart);
 
 void setup() {
     Serial.begin(9600);
@@ -19,7 +20,7 @@ void setup() {
 }
 
 void loop() {
-    ble_uart.pollAci(); // Poll continuously for new events.
+    ble_core.pollAci(); // Poll continuously for new events.
 
     int size = ble_stream.available();
 
