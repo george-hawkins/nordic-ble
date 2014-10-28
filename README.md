@@ -18,8 +18,12 @@ $ ln -s $PWD/ble-sdk-arduino-0.9.4.beta/libraries/BLE ~/Arduino/libraries/ble-sd
 $ curl --remote-name http://arduiniana.org/Streaming/Streaming5.zip
 $ unzip Streaming5.zip -d ~/Arduino/libraries
 $ git clone git@github.com:george-hawkins/nordic-ble.git
-$ ln -s $PWD/nordic-ble/nRF8001-core ~/Arduino/libraries
-$ ln -s $PWD/nordic-ble/ble-uart-peripheral ~/Arduino/libraries
+$ cd nordic-ble
+$ ln -s $PWD/nRF8001-core ~/Arduino/libraries
+$ ln -s $PWD/ble-uart-peripheral ~/Arduino/libraries
+$ cd ble-uart-peripheral/uart
+$ alias nrfgostudio="WINEPREFIX=~/.wine32 wine 'C:/Program Files/Nordic Semiconductor/nRFgo Studio/nRFgoStudio'"
+$ nrfgostudio -nrf8001 -g UART_over_BLE.xml -codeGenVersion 1 -o .
 ```
 
 Now in the Arduino IDE you can open File --> Examples --> ble-uart-peripheral --> ble_stream_echo.
