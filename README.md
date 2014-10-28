@@ -37,6 +37,10 @@ But keep the Adafruit comment below as their board is used.
 
 Add license headers to source files.
 
+The Arduino IDE implies that the contents of the .data and .bss sections end up in RAM and correspond to global variables.
+
+Currently the two make up 802 bytes, i.e. 39% of the available 2K, so find out what's taking up this space (perhaps the IDE is mis-counting PROGMEM data?).
+
 Adafruit
 --------
 
