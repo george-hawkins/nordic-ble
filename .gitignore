@@ -2,10 +2,9 @@
 .project
 .settings/
 arduino/
-junk/
 Libraries/
 Release/
 spec.d
-ble-uart-peripheral/uart/services.h
-ble-uart-peripheral/uart/services_lock.h
-ble-uart-peripheral/uart/ublue_setup.gen.out.txt
+services.h
+services_lock.h
+ublue_setup.gen.out.txt
