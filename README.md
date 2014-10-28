@@ -18,8 +18,8 @@ $ ln -s $PWD/ble-sdk-arduino-0.9.4.beta/libraries/BLE ~/Arduino/libraries/ble-sd
 $ curl --remote-name http://arduiniana.org/Streaming/Streaming5.zip
 $ unzip Streaming5.zip -d ~/Arduino/libraries
 $ git clone XYZ
-$ ln -s $PWD/nordic_ble/nRF8001-core ~/Arduino/libraries
-$ ln -s $PWD/nordic_ble/ble-uart-peripheral ~/Arduino/libraries
+$ ln -s $PWD/nordic-ble/nRF8001-core ~/Arduino/libraries
+$ ln -s $PWD/nordic-ble/ble-uart-peripheral ~/Arduino/libraries
 ```
 
 Now in the Arduino IDE you can open File --> Examples --> ble-uart-peripheral --> ble_stream_echo.
