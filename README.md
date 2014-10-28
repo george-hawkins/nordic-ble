@@ -17,7 +17,7 @@ $ curl --location https://github.com/NordicSemiconductor/ble-sdk-arduino/archive
 $ ln -s $PWD/ble-sdk-arduino-0.9.4.beta/libraries/BLE ~/Arduino/libraries/ble-sdk-arduino
 $ curl --remote-name http://arduiniana.org/Streaming/Streaming5.zip
 $ unzip Streaming5.zip -d ~/Arduino/libraries
-$ git clone XYZ
+$ git clone git@github.com:george-hawkins/nordic-ble.git
 $ ln -s $PWD/nordic-ble/nRF8001-core ~/Arduino/libraries
 $ ln -s $PWD/nordic-ble/ble-uart-peripheral ~/Arduino/libraries
 ```
@@ -30,6 +30,8 @@ TODO
 Rework this page once the logic has all been moved to mirror the logic of Nordic's examples/ble_uart_project_template.
 
 But keep the Adafruit comment below as their board is used.
+
+Add license headers to source files.
 
 Adafruit
 --------
