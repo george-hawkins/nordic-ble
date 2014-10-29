@@ -28,8 +28,9 @@ void BleCore::begin(aci_setup_info_t& info, int8_t reqn_pin, int8_t rdyn_pin, in
     aci_state.aci_pins.interface_is_interrupt = false;
     aci_state.aci_pins.interrupt_number = 1;
 
-    // Initialize the host pins (including SPI). The nRF8001 itself is only setup later by do_aci_setup(...).
-    lib_aci_init(&aci_state, false);
+    // Initialize the host pins (including SPI) and hard reset the nRF8001 (if the reset_pin is set) and soft reset its radio.
+    // The nRF8001 itself is only setup later by do_aci_setup(...).
+    lib_aci_init(&aci_state, true);
 }
 
 void BleCore::startAdvertising() {
@@ -111,6 +112,10 @@ void BleCore::pollAci() {
             if (received_observer != NULL) {
                 aci_rx_data_t& data = aci_evt.params.data_received.rx_data;
 
+                // aci_evt.len is the packet length. In addition to the data-received bytes the packet contains:
+                // * the opcode, i.e. ACI_EVT_DATA_RECEIVED - aci_evt.evt_opcode.
+                // * the pipe number - aci_evt.params.data_received.rx_data.pipe_number.
+                // So the number of data-received bytes is aci_evt.len minus these two bytes.
                 received_observer->received(data.pipe_number, data.aci_data, aci_evt.len - 2);
             }
             break;
@@ -121,7 +126,8 @@ void BleCore::pollAci() {
 
         case ACI_EVT_PIPE_ERROR:
             // See the appendix in the nRF8001 Product Specification for details on the error codes.
-            Serial << F("ACI_EVT_PIPE_ERROR: pipe=") << aci_evt.params.pipe_error.pipe_number << F(", error code=0x") << _HEX(aci_evt.params.pipe_error.error_code) << endl;
+            Serial << F("ACI_EVT_PIPE_ERROR: pipe=") << aci_evt.params.pipe_error.pipe_number <<
+                F(", error code=0x") << _HEX(aci_evt.params.pipe_error.error_code) << endl;
 
             // Increment the credit available as the data packet was not sent.
             aci_state.data_credit_available++;
@@ -137,9 +143,8 @@ void BleCore::pollAci() {
     }
 }
 
-// len must be less than or equal to ACI_PIPE_TX_DATA_MAX_LEN.
-bool BleCore::write(uint8_t pipe, size_t max_len, const uint8_t* buffer, size_t len) {
-    assert(len <= max_len);
+bool BleCore::write(uint8_t pipe, size_t pipe_max_len, const uint8_t* buffer, size_t len) {
+    assert(len <= pipe_max_len);
 
     if (BLE_DEBUG) {
         Serial << F("Sending to pipe ") << (int)pipe << F(": ");
@@ -149,17 +154,22 @@ bool BleCore::write(uint8_t pipe, size_t max_len, const uint8_t* buffer, size_t 
         Serial << endl;
     }
 
-    bool available = lib_aci_is_pipe_available(&aci_state, pipe);
+    bool ok =
+            aci_state.data_credit_available > 0 &&
+            lib_aci_is_pipe_available(&aci_state, pipe) &&
+            lib_aci_send_data(pipe, const_cast<uint8_t*>(buffer), len);
 
-    if (available) {
-        lib_aci_send_data(pipe, const_cast<uint8_t*>(buffer), len);
+    if (ok) {
         aci_state.data_credit_available--;
         delay(35); // Required delay between sends.
     } else {
         pollAci();
     }
 
-    return available;
+    // Only the Adafruit code includes the delay(...) or polling.
+    // The Nordic code does not bother with either - so the delay may not, as claimed, be required.
+
+    return ok;
 }
 
 void BleTiming::changeTiming(aci_state_t* aci_state) {

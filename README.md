@@ -28,6 +28,19 @@ $ nrfgostudio -nrf8001 -g UART_over_BLE.xml -codeGenVersion 1 -o .
 
 Now in the Arduino IDE you can open File --> Examples --> ble-uart-peripheral --> ble_stream_echo.
 
+Restarting Bluetooth
+--------------------
+
+You can completely quit out of the Android UART app by presseing "Disconnect" if currently connected and then pressing the system back button. The app will then ask if you really want to quit.
+
+However I have gotten the Android Bluetooth stack into a state where quiting and restarting the app isn't enough to reset things.
+
+This situation could only be resolved by turning Bluetooth off (via the normal mechanism) outside the app and then turning it back on again (or restating the UART app and letting it request Bluetooth be turned back on).
+
+This situation was quite hard to diagnose as the app could establish a connection but could no longer received any of the UART data.
+
+I thought I'd introduced a bug in my code but in the end found that the UART app could no longer successfully trigger the actions that result in the opening of a pipe on the nRF8001.
+
 TODO
 ----
 
