@@ -166,8 +166,8 @@ bool BleCore::write(uint8_t pipe, size_t pipe_max_len, const uint8_t* buffer, si
         pollAci();
     }
 
-    // Only the Adafruit code includes the delay(...) or polling.
-    // The Nordic code does not bother with either - so the delay may not, as claimed, be required.
+    // Only the Adafruit code includes either the delay(...) or polling.
+    // The Nordic code has neither - so despite the claim the delay may not be required.
 
     return ok;
 }
