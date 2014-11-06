@@ -30,15 +30,15 @@ void BleCore::begin(aci_setup_info_t& info, int8_t reqn_pin, int8_t rdyn_pin, in
 
     // Initialize the host pins (including SPI) and hard reset the nRF8001 (if the reset_pin is set) and soft reset its radio.
     // The nRF8001 itself is only setup later by do_aci_setup(...).
-    lib_aci_init(&aci_state, true);
+    lib_aci_init(&aci_state, false);
 }
 
 void BleCore::startAdvertising() {
     lib_aci_connect(adv_timeout, adv_interval);
 }
 
-// The setup_msgs contain a default device name and changing it is disabled by default. However if
-// it was enabled in nRFgo Studio then there will be a pipe via which it can be updated like so...
+// The setup_msgs contain a default device name and changing it is disabled by default. However if it
+// was enabled in the configuration then there will be a pipe via which it can be updated like so...
 void BleDeviceName::changeName(aci_state_t* aci_state) {
     lib_aci_set_local_data(aci_state, pipe, (uint8_t*)device_name, strlen(device_name));
 }
@@ -52,7 +52,7 @@ void BleCore::pollAci() {
         aci_evt_t& aci_evt = aci_data.evt;
 
         if (BLE_DEBUG) {
-            printAciEvtOpcode(aci_evt.evt_opcode);
+            printAciInfo(aci_state, aci_evt);
         }
 
         // Note: the term "credit" seen at various points in this method is related to flow control.
@@ -82,12 +82,11 @@ void BleCore::pollAci() {
             break;
 
         case ACI_EVT_CMD_RSP:
-            // If an ACI command response event comes with an error then halt.
+            // There are other non-error command response statuses in addition to ACI_STATUS_SUCCESS
+            // but these are generally handled immediately in-place using lib_aci_event_peek(...).
             if (aci_evt.params.cmd_rsp.cmd_status != ACI_STATUS_SUCCESS) {
-                // There are other non-error command response statuses in addition to ACI_STATUS_SUCCESS
-                // but these are generally handled immediately in-place using lib_aci_event_peek(...).
-                Serial << F("ACI command 0x") << _HEX(aci_evt.params.cmd_rsp.cmd_opcode) << F(" failed") << endl;
-                abort();
+                // printAciInfo will output the details (opcode and status).
+                abort(); // Adafruit stop on a failure, Nordic do not.
             }
             break;
 
@@ -125,12 +124,11 @@ void BleCore::pollAci() {
             break;
 
         case ACI_EVT_PIPE_ERROR:
-            // See the appendix in the nRF8001 Product Specification for details on the error codes.
-            Serial << F("ACI_EVT_PIPE_ERROR: pipe=") << aci_evt.params.pipe_error.pipe_number <<
-                F(", error code=0x") << _HEX(aci_evt.params.pipe_error.error_code) << endl;
-
-            // Increment the credit available as the data packet was not sent.
-            aci_state.data_credit_available++;
+            // printAciInfo will output the details (pipe and error code).
+            // For all cases, other than a peer ATT error, increment the credit available as no packet was sent.
+            if (aci_evt.params.pipe_error.error_code != ACI_STATUS_ERROR_PEER_ATT_ERROR) {
+                aci_state.data_credit_available++;
+            }
             break;
 
         default:
@@ -166,8 +164,8 @@ bool BleCore::write(uint8_t pipe, size_t pipe_max_len, const uint8_t* buffer, si
         pollAci();
     }
 
-    // Only the Adafruit code includes either the delay(...) or polling.
-    // The Nordic code has neither - so despite the claim the delay may not be required.
+    // Only the Adafruit code includes either the delay(...) or polling - Nordic has neither.
+    // A 35ms delay seems massive (given the connection interval can be 7.5ms) so investigation could well show it's not required.
 
     return ok;
 }
@@ -192,10 +190,9 @@ void BleTiming::changeTiming(aci_state_t* aci_state) {
         // If there are local pipes then, once these pipes have all become available, apply
         // any connection timing settings (if any) that were configured in nRFgo Studio.
         if (localCount == localAvailable) {
-            if (localCount > 0) {
-                lib_aci_change_timing_GAP_PPCP();
+            if (localCount == 0 || lib_aci_change_timing_GAP_PPCP()) {
+                change_done = true;
             }
-            change_done = true;
         }
     }
 }

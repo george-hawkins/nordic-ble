@@ -3,6 +3,6 @@
 
 #include <lib_aci.h>
 
-extern void printAciEvtOpcode(aci_evt_opcode_t);
+extern void printAciInfo(aci_state_t& aci_state, aci_evt_t& aci_evt);
 
 #endif /* PRINT_ACI_EVT_H_ */
