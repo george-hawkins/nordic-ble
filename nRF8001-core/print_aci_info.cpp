@@ -5,8 +5,8 @@
 const uint8_t REMOTE_USER_TERMINATED_CONNECTION = 0x13;
 
 struct Hex {
-    long value;
-    Hex(long value) : value(value) { };
+    uint32_t value;
+    Hex(uint32_t value) : value(value) { };
 };
 
 // Print hex values with a leading 0x.
@@ -23,6 +23,17 @@ static bool isAdvertising(aci_evt_params_cmd_rsp_t& rsp) {
     aci_cmd_opcode_t code = rsp.cmd_opcode;
 
     return code == ACI_CMD_CONNECT || code == ACI_CMD_BOND || code == ACI_CMD_BROADCAST;
+}
+
+static void printByteArray(uint8_t* data, size_t len) {
+    Serial << F("[");
+    for (int i = 0; i < len; i++) {
+        if (i != 0) {
+            Serial << F(", ");
+        }
+        Serial << Hex(data[i]);
+    }
+    Serial << F("]");
 }
 
 void printAciInfo(aci_state_t& aci_state, aci_evt_t& aci_evt) {
@@ -51,7 +62,7 @@ void printAciInfo(aci_state_t& aci_state, aci_evt_t& aci_evt) {
         break;
 
     case ACI_EVT_HW_ERROR: {
-        // Report the source file and line number where the error occurred in the nRF8001 Bluetooth stack.
+        // Report the source file and line number where the error occurred in the nRF8001 BLE stack.
         Serial << F("HW_ERROR (");
         Serial.write(aci_evt.params.hw_error.file_name, (aci_evt.len - 3));
         Serial << F(":") << aci_evt.params.hw_error.line_num << F(")") << endl;
@@ -78,6 +89,20 @@ void printAciInfo(aci_state_t& aci_state, aci_evt_t& aci_evt) {
             F(", supervision_timeout=") << aci_state.supervision_timeout * 10 << F("ms)") << endl;
         break;
 
+    // ACI_EVT_CONNECTED should use the same logic as ACI_EVT_TIMING to print out timing.
+    // However that requires pull request https://github.com/NordicSemiconductor/ble-sdk-arduino/pull/12
+    case ACI_EVT_CONNECTED: {
+        aci_evt_params_connected_t connected = aci_evt.params.connected;
+        uint32_t interval_ms = connected.conn_rf_interval;
+
+        interval_ms *= 125;
+        interval_ms /= 100;
+
+        Serial << F("CONNECTED (connection_interval=") << interval_ms <<
+            F("ms, slave_latency=") << connected.conn_slave_rf_latency <<
+            F(", supervision_timeout=") << connected.conn_rf_timeout * 10 << F("ms)") << endl;
+        break;
+    }
     case ACI_EVT_DISCONNECTED: {
         aci_evt_params_disconnected_t& status = aci_evt.params.disconnected;
 
@@ -92,7 +117,7 @@ void printAciInfo(aci_state_t& aci_state, aci_evt_t& aci_evt) {
             if (status.aci_status == ACI_STATUS_ERROR_ADVT_TIMEOUT) {
                 Serial << F("advertising timeout");
             } else {
-                Serial << F("aci_status=") << Hex(status.btle_status);
+                Serial << F("aci_status=") << Hex(status.aci_status);
             }
         }
         Serial << F(")") << endl;
@@ -100,18 +125,26 @@ void printAciInfo(aci_state_t& aci_state, aci_evt_t& aci_evt) {
     }
     case ACI_EVT_DATA_RECEIVED: {
         aci_rx_data_t& data = aci_evt.params.data_received.rx_data;
-        uint8_t len = aci_evt.len - 2;
 
-        Serial << F("DATA_RECEIVED (pipe=") << data.pipe_number << F(", data=[");
-        for (int i = 0; i < len; i++) {
-            if (i != 0) {
-                Serial << ", ";
-            }
-            Serial << Hex(data.aci_data[i]);
-        }
-        Serial << F("])") << endl;
+        Serial << F("DATA_RECEIVED (pipe=") << data.pipe_number << F(", data=");
+        printByteArray(data.aci_data, aci_evt.len - 2);
+        Serial << F(")") << endl;
         break;
     }
+    case ACI_EVT_PIPE_STATUS: {
+        aci_evt_params_pipe_status_t& status = aci_evt.params.pipe_status;
+
+        Serial << F("PIPE_STATUS (open=");
+        printByteArray(status.pipes_open_bitmap, 8);
+        Serial << F(", closed=");
+        printByteArray(status.pipes_closed_bitmap, 8);
+        Serial << F(")") << endl;
+        break;
+    }
+    case ACI_EVT_DATA_CREDIT:
+        Serial << F("DATA_CREDIT (credit=") << aci_evt.params.data_credit.credit << F(")") << endl;
+        break;
+
     case ACI_EVT_INVALID:
         Serial << F("INVALID") << endl;
         break;
@@ -120,19 +153,8 @@ void printAciInfo(aci_state_t& aci_state, aci_evt_t& aci_evt) {
         Serial << F("ECHO") << endl;
         break;
 
-    case ACI_EVT_CONNECTED:
-        Serial << F("CONNECTED") << endl;
-        break;
-
     case ACI_EVT_BOND_STATUS:
         Serial << F("BOND_STATUS") << endl;
-        break;
-
-    case ACI_EVT_PIPE_STATUS:
-        Serial << F("PIPE_STATUS") << endl;
-        break;
-    case ACI_EVT_DATA_CREDIT:
-        Serial << F("DATA_CREDIT") << endl;
         break;
 
     case ACI_EVT_DATA_ACK:
