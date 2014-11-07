@@ -56,28 +56,37 @@ void BleCore::pollAci() {
         }
 
         // Note: the term "credit" seen at various points in this method is related to flow control.
-        // For more information see aci.h and the "Flow control" section of the nRF8001 Product Specification.
+        // For more information see aci.h and section 21 "Flow control" in the nRF8001 Product Specification.
 
         switch (aci_evt.evt_opcode) {
         // As soon as the nRF8001 is reset a device-started event is received.
         case ACI_EVT_DEVICE_STARTED:
             aci_state.data_credit_total = aci_evt.params.device_started.credit_available;
+            aci_state.data_credit_available = 0;
+
             switch (aci_evt.params.device_started.device_mode) {
             case ACI_DEVICE_SETUP: {
                 // The device is in setup mode - transfer all the setup_msgs data to the nRF8001.
                 uint8_t status = do_aci_setup(&aci_state);
                 if (status != SETUP_SUCCESS) {
-                    Serial << F("ACI setup failed with status 0x") << _HEX(status) << endl;
+                    Serial << F("do_aci_setup failed (reason=0x") << _HEX(status) << F(")") << endl;
                     abort();
                 }
                 break;
             }
 
             case ACI_DEVICE_STANDBY:
-                if (device_name != NULL) {
-                    device_name->changeName(&aci_state);
+                if (aci_evt.params.device_started.hw_error) {
+                    // A fatal error occurred in the nRF8001 firmware - an ACI_EVT_HW_ERROR will follow with debug information.
+                    delay(20);
+                    // Nordic added this "magic" delay on Jan 30th, 2014 to one of their examples and subsequently to all others.
+                    // See https://github.com/NordicSemiconductor/ble-sdk-arduino/commit/177b407
+                } else {
+                    if (device_name != NULL) {
+                        device_name->changeName(&aci_state);
+                    }
+                    startAdvertising();
                 }
-                startAdvertising();
             }
             break;
 
@@ -104,6 +113,7 @@ void BleCore::pollAci() {
             break;
 
         case ACI_EVT_DISCONNECTED: // Disconnected or advertising timed out.
+            aci_state.data_credit_available = 0;
             startAdvertising();
             break;
 
@@ -120,15 +130,21 @@ void BleCore::pollAci() {
             break;
 
         case ACI_EVT_DATA_CREDIT:
-            aci_state.data_credit_available = aci_state.data_credit_available + aci_evt.params.data_credit.credit;
+            aci_state.data_credit_available += aci_evt.params.data_credit.credit;
             break;
 
         case ACI_EVT_PIPE_ERROR:
-            // printAciInfo will output the details (pipe and error code).
-            // For all cases, other than a peer ATT error, increment the credit available as no packet was sent.
+            // printAciInfo will output the error details (pipe and code).
+            // PEER_ATT_ERROR means the peer device sent an error - this doesn't affect our credit.
+            // For all cases increment the credit available as no packet was sent.
             if (aci_evt.params.pipe_error.error_code != ACI_STATUS_ERROR_PEER_ATT_ERROR) {
                 aci_state.data_credit_available++;
             }
+            break;
+
+        case ACI_EVT_HW_ERROR:
+            // Start advertising again after an error in the nRF8001 firmware (printAciInfo will output the location of the error).
+            startAdvertising();
             break;
 
         default:

@@ -36,6 +36,10 @@ public:
 
 class BleCore {
 private:
+    // The BLE section of Apple's Bluetooth Design Guidelines recommends 20ms, followed by a list of longer intervals - 152.5ms, 211.25ms etc.
+    // A longer interval consumes far less power (Nokia show 96% less for 1s vs 20ms). See section 13.2 of the nRF8001 product specification.
+    static const uint16_t DEFAULT_ADV_INTERVAL = 244; // 244 * 0.625ms = 152.5ms.
+
     const uint16_t adv_timeout;
     const uint16_t adv_interval;
 
@@ -49,7 +53,7 @@ private:
 public:
     // adv_timeout - maximum advertising time in seconds (0 means infinite).
     // adv_interval - advertising interval (in multiples of 0.625ms).
-    BleCore(uint16_t adv_timeout = 0, uint16_t adv_interval = 80) : adv_timeout(adv_timeout), adv_interval(adv_interval) { }
+    BleCore(uint16_t adv_timeout = 0, uint16_t adv_interval = DEFAULT_ADV_INTERVAL) : adv_timeout(adv_timeout), adv_interval(adv_interval) { }
 
     virtual ~BleCore() { }
 
