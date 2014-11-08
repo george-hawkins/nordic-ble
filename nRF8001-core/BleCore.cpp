@@ -1,3 +1,18 @@
+/**
+ * Copyright 2014 George C. Hawkins
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 #include <SPI.h>
 #include <Streaming.h>
 #include "BleCore.h"
@@ -162,9 +177,7 @@ bool BleCore::write(uint8_t pipe, size_t pipe_max_len, const uint8_t* buffer, si
 
     if (BLE_DEBUG) {
         Serial << F("Sending to pipe ") << (int)pipe << F(": ");
-        for (uint8_t i = 0; i < len; i++) {
-            Serial << F(" 0x") << _HEX(buffer[i]);
-        }
+        printByteArray(buffer, len);
         Serial << endl;
     }
 
