@@ -118,8 +118,10 @@ All this started with the Adafruit nRF8001 breakout and the related product tuto
 
 As they usually note in their source:
 ```cpp
-Adafruit invests time and resources providing this open source code, please
-support Adafruit and open-source hardware by purchasing products from Adafruit!
+/*
+ * Adafruit invests time and resources providing this open source code, please
+ * support Adafruit and open-source hardware by purchasing products from Adafruit!
+ */
 ```
 
 So why not pickup an [nRF8001 breakout](https://www.adafruit.com/product/1697) now if you haven't already?
