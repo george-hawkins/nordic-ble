@@ -5,10 +5,10 @@
     <Device>nRF8001_Dx</Device>
     <Service Type="local" PrimaryService="true">
         <Name>UART over BTLE</Name>
-        <Uuid BaseUUID="6e400000b5a3f393e0a9e50e24dcca9e" BaseUUIDName="Custom UART">0001</Uuid>
+        <Uuid BaseUUID="6e400000b5a3f393e0a9e50e24dcca9e" BaseUUIDName="UART Base">0001</Uuid>
         <Characteristic>
             <Name>UART RX</Name>
-            <Uuid BaseUUID="6e400000b5a3f393e0a9e50e24dcca9e" BaseUUIDName="Custom UART">0002</Uuid>
+            <Uuid BaseUUID="6e400000b5a3f393e0a9e50e24dcca9e" BaseUUIDName="UART Base">0002</Uuid>
             <DefaultValue></DefaultValue>
             <UsePresentationFormat>0</UsePresentationFormat>
             <MaxDataLength>20</MaxDataLength>
@@ -30,7 +30,7 @@
         </Characteristic>
         <Characteristic>
             <Name>UART TX</Name>
-            <Uuid BaseUUID="6e400000b5a3f393e0a9e50e24dcca9e" BaseUUIDName="Custom UART">0003</Uuid>
+            <Uuid BaseUUID="6e400000b5a3f393e0a9e50e24dcca9e" BaseUUIDName="UART Base">0003</Uuid>
             <DefaultValue></DefaultValue>
             <UsePresentationFormat>0</UsePresentationFormat>
             <MaxDataLength>20</MaxDataLength>
@@ -53,20 +53,20 @@
     </Service>
     <Gapsettings>
         <Name>UART</Name>
-        <DeviceNameWriteLength>7</DeviceNameWriteLength>
-        <LocalPipeOnDeviceName>true</LocalPipeOnDeviceName>
-        <DeviceNameShortLength>0</DeviceNameShortLength>
+        <DeviceNameWriteLength>8</DeviceNameWriteLength>
+        <LocalPipeOnDeviceName>false</LocalPipeOnDeviceName>
+        <DeviceNameShortLength>1</DeviceNameShortLength>
         <Apperance>0000</Apperance>
         <SecurityLevel>0</SecurityLevel>
         <AuthenticationReq>0</AuthenticationReq>
         <IoCapabilities>0</IoCapabilities>
         <BondTimeout>600</BondTimeout>
-        <SecurityRequestDelay>0</SecurityRequestDelay>
+        <SecurityRequestDelay>10</SecurityRequestDelay>
         <MinimumKeySize>7</MinimumKeySize>
         <MaximumKeySize>16</MaximumKeySize>
-        <AdvertisingDataBondedBitmap>1a</AdvertisingDataBondedBitmap>
+        <AdvertisingDataBondedBitmap>0</AdvertisingDataBondedBitmap>
         <AdvertisingDataGeneralBitmap>1a</AdvertisingDataGeneralBitmap>
-        <AdvertisingDataBrodcastBitmap>10</AdvertisingDataBrodcastBitmap>
+        <AdvertisingDataBrodcastBitmap>0</AdvertisingDataBrodcastBitmap>
         <AdvertisingDataBondedScanResponseBitmap>0</AdvertisingDataBondedScanResponseBitmap>
         <AdvertisingDataGeneralScanResponseBitmap>0</AdvertisingDataGeneralScanResponseBitmap>
         <AdvertisingDataBrodcastScanResponseBitmap>0</AdvertisingDataBrodcastScanResponseBitmap>
@@ -77,26 +77,17 @@
         <AdvertisingDataGeneralScanResponseBitmapCustom>0</AdvertisingDataGeneralScanResponseBitmapCustom>
         <AdvertisingDataBrodcastScanResponseBitmapCustom>0</AdvertisingDataBrodcastScanResponseBitmapCustom>
         <TxPowerLevelOffset>0</TxPowerLevelOffset>
-        <MinimumConnectionInterval>6</MinimumConnectionInterval>
-        <MaximumConnectionInterval>18</MaximumConnectionInterval>
+        <MinimumConnectionInterval>65535</MinimumConnectionInterval>
+        <MaximumConnectionInterval>65535</MaximumConnectionInterval>
         <SlaveLatency>0</SlaveLatency>
-        <TimeoutMultipler>10</TimeoutMultipler>
+        <TimeoutMultipler>65535</TimeoutMultipler>
         <AddServiceUpdateCharacteristic>false</AddServiceUpdateCharacteristic>
         <AddServiceUpdateCharacteristicPipe>false</AddServiceUpdateCharacteristicPipe>
         <TimingChangeDelay>5</TimingChangeDelay>
         <ServiceToAdvertise>
-            <Uuid BaseUUID="6e400000b5a3f393e0a9e50e24dcca9e" BaseUUIDName="Custom UART">0001</Uuid>
+            <Uuid BaseUUID="6e400000b5a3f393e0a9e50e24dcca9e" BaseUUIDName="UART Base">0001</Uuid>
         </ServiceToAdvertise>
-        <CustomAdTypes>
-            <AdType index="1">
-                <Type>19</Type>
-                <Value>0000</Value>
-            </AdType>
-            <AdType index="2">
-                <Type>18</Type>
-                <Value></Value>
-            </AdType>
-        </CustomAdTypes>
+        <CustomAdTypes/>
     </Gapsettings>
     <Hardwaresettings>
         <Clocksource>1</Clocksource>
@@ -112,8 +103,8 @@
         <BatteryCharge>220</BatteryCharge>
         <Master32KhzClockAccuracy>10</Master32KhzClockAccuracy>
         <ConnectionInterval>1000</ConnectionInterval>
-        <PercentOfTimeSleeping>10</PercentOfTimeSleeping>
-        <PercentOfTimeAdvertising>10</PercentOfTimeAdvertising>
+        <PercentOfTimeSleeping>0</PercentOfTimeSleeping>
+        <PercentOfTimeAdvertising>0</PercentOfTimeAdvertising>
         <AdvertisingInterval>1280</AdvertisingInterval>
     </CurrentInput>
 </Profile>
