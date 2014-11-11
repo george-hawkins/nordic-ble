@@ -16,8 +16,9 @@
 #ifndef BLESTREAM_H_
 #define BLESTREAM_H_
 
+#include <BleUart.h>
+
 #include "RingBuffer.h"
-#include "BleUart.h"
 
 class BleStream: public Stream, private ReceivedObserver {
 private:
