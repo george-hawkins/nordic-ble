@@ -60,7 +60,7 @@ You need to:
 * Once it's unpacked or cloned you need to go into the ble-uart-peripheral/uart folder and use nRFgo Studio to generate the services.h file (see below).
 * Then you need to copy or move the nRF8001-core and ble-uart-peripheral folders into your Arduino IDE libraries folder.
 
-Now in the Arduino IDE you can open File --> Examples --> ble-uart-peripheral --> ble_stream_echo.
+Now in the Arduino IDE you can open File --> Examples --> ble-uart-peripheral --> ble_echo.
 
 You can then upload this sketch to an Arduino with nRF8001 breakout, configured as described in the Adafruit product tutorial, and it should work just like the Adafruit UART sketch when used with the Android and iOS UART apps from Nordic.
 
