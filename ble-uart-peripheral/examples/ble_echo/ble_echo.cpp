@@ -43,5 +43,5 @@ void setup() {
 }
 
 void loop() {
-    ble_core.pollAci(); // Poll continuously for new events.
+    ble_core.handleAciEvent(); // Process the next incoming event.
 }

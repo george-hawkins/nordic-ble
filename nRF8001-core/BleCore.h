@@ -73,7 +73,7 @@ public:
     virtual ~BleCore() { }
 
     void begin(aci_setup_info_t& info, int8_t reqn_pin, int8_t rdyn_pin, int8_t reset_pin);
-    void pollAci();
+    bool handleAciEvent();
 
     bool write(uint8_t pipe, size_t max_len, const uint8_t* buffer, size_t len);
 

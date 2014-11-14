@@ -58,118 +58,120 @@ void BleDeviceName::changeName(aci_state_t* aci_state) {
     lib_aci_set_local_data(aci_state, pipe, (uint8_t*)device_name, strlen(device_name));
 }
 
-// Handle low level ACI events.
-void BleCore::pollAci() {
+// Attempts to get and handle the next ACI event - returns false if there is no event.
+bool BleCore::handleAciEvent() {
     hal_aci_evt_t aci_data;
 
-    // If there's an ACI event available...
     if (lib_aci_event_get(&aci_state, &aci_data)) {
-        aci_evt_t& aci_evt = aci_data.evt;
-
-        if (BLE_DEBUG) {
-            printAciInfo(aci_state, aci_evt);
-        }
-
-        // Note: the term "credit" seen at various points in this method is related to flow control.
-        // For more information see aci.h and section 21 "Flow control" in the nRF8001 Product Specification.
-
-        switch (aci_evt.evt_opcode) {
-        // As soon as the nRF8001 is reset a device-started event is received.
-        case ACI_EVT_DEVICE_STARTED:
-            aci_state.data_credit_total = aci_evt.params.device_started.credit_available;
-            aci_state.data_credit_available = 0;
-
-            switch (aci_evt.params.device_started.device_mode) {
-            case ACI_DEVICE_SETUP: {
-                // The device is in setup mode - transfer all the setup_msgs data to the nRF8001.
-                uint8_t status = do_aci_setup(&aci_state);
-                if (status != SETUP_SUCCESS) {
-                    Serial << F("do_aci_setup failed (reason=0x") << _HEX(status) << F(")") << endl;
-                    abort();
-                }
-                break;
-            }
-
-            case ACI_DEVICE_STANDBY:
-                if (aci_evt.params.device_started.hw_error) {
-                    // A fatal error occurred in the nRF8001 firmware - an ACI_EVT_HW_ERROR will follow with debug information.
-                    delay(20);
-                    // Nordic added this "magic" delay on Jan 30th, 2014 to one of their examples and subsequently to all others.
-                    // See https://github.com/NordicSemiconductor/ble-sdk-arduino/commit/177b407
-                } else {
-                    if (device_name != NULL) {
-                        device_name->changeName(&aci_state);
-                    }
-                    startAdvertising();
-                }
-            }
-            break;
-
-        case ACI_EVT_CMD_RSP:
-            // There are other non-error command response statuses in addition to ACI_STATUS_SUCCESS
-            // but these are generally handled immediately in-place using lib_aci_event_peek(...).
-            if (aci_evt.params.cmd_rsp.cmd_status != ACI_STATUS_SUCCESS) {
-                // printAciInfo will output the details (opcode and status).
-                abort(); // Adafruit stop on a failure, Nordic do not.
-            }
-            break;
-
-        case ACI_EVT_CONNECTED:
-            aci_state.data_credit_available = aci_state.data_credit_total;
-            timing.reset();
-            break;
-
-        case ACI_EVT_PIPE_STATUS:
-            timing.changeTiming(&aci_state);
-            break;
-
-        case ACI_EVT_TIMING:
-            // Link connection interval changed.
-            break;
-
-        case ACI_EVT_DISCONNECTED: // Disconnected or advertising timed out.
-            aci_state.data_credit_available = 0;
-            startAdvertising();
-            break;
-
-        case ACI_EVT_DATA_RECEIVED:
-            if (received_observer != NULL) {
-                aci_rx_data_t& data = aci_evt.params.data_received.rx_data;
-
-                // aci_evt.len is the packet length. In addition to the data-received bytes the packet contains:
-                // * the opcode, i.e. ACI_EVT_DATA_RECEIVED - aci_evt.evt_opcode.
-                // * the pipe number - aci_evt.params.data_received.rx_data.pipe_number.
-                // So the number of data-received bytes is aci_evt.len minus these two bytes.
-                received_observer->received(data.pipe_number, data.aci_data, aci_evt.len - 2);
-            }
-            break;
-
-        case ACI_EVT_DATA_CREDIT:
-            aci_state.data_credit_available += aci_evt.params.data_credit.credit;
-            break;
-
-        case ACI_EVT_PIPE_ERROR:
-            // printAciInfo will output the error details (pipe and code).
-            // PEER_ATT_ERROR means the peer device sent an error - this doesn't affect our credit.
-            // For all cases increment the credit available as no packet was sent.
-            if (aci_evt.params.pipe_error.error_code != ACI_STATUS_ERROR_PEER_ATT_ERROR) {
-                aci_state.data_credit_available++;
-            }
-            break;
-
-        case ACI_EVT_HW_ERROR:
-            // Start advertising again after an error in the nRF8001 firmware (printAciInfo will output the location of the error).
-            startAdvertising();
-            break;
-
-        default:
-            Serial << F("Unhandled event with opcode 0x") << _HEX(aci_evt.evt_opcode) << endl;
-            break;
-        }
-    } else {
-        // There's no event in the ACI event queue. If there's also no event in the ACI command queue then
-        // the Arduino can go to sleep and wake only when an interrupt event occurs on the RDYN pin.
+        // There's no event in the ACI event queue - so the caller could go into deep
+        // sleep, waiting to be woken by an interrupt event occurring on the RDYN pin.
+        return false;
     }
+
+    aci_evt_t& aci_evt = aci_data.evt;
+
+    if (BLE_DEBUG) {
+        printAciInfo(aci_state, aci_evt);
+    }
+
+    // Note: the term "credit" seen at various points in this method is related to flow control.
+    // For more information see aci.h and section 21 "Flow control" in the nRF8001 Product Specification.
+
+    switch (aci_evt.evt_opcode) {
+    // As soon as the nRF8001 is reset a device-started event is received.
+    case ACI_EVT_DEVICE_STARTED:
+        aci_state.data_credit_total = aci_evt.params.device_started.credit_available;
+        aci_state.data_credit_available = 0;
+
+        switch (aci_evt.params.device_started.device_mode) {
+        case ACI_DEVICE_SETUP: {
+            // The device is in setup mode - transfer all the setup_msgs data to the nRF8001.
+            uint8_t status = do_aci_setup(&aci_state);
+            if (status != SETUP_SUCCESS) {
+                Serial << F("do_aci_setup failed (reason=0x") << _HEX(status) << F(")") << endl;
+                abort();
+            }
+            break;
+        }
+
+        case ACI_DEVICE_STANDBY:
+            if (aci_evt.params.device_started.hw_error) {
+                // A fatal error occurred in the nRF8001 firmware - an ACI_EVT_HW_ERROR will follow with debug information.
+                delay(20);
+                // Nordic added this "magic" delay on Jan 30th, 2014 to one of their examples and subsequently to all others.
+                // See https://github.com/NordicSemiconductor/ble-sdk-arduino/commit/177b407
+            } else {
+                if (device_name != NULL) {
+                    device_name->changeName(&aci_state);
+                }
+                startAdvertising();
+            }
+        }
+        break;
+
+    case ACI_EVT_CMD_RSP:
+        // There are other non-error command response statuses in addition to ACI_STATUS_SUCCESS
+        // but these are generally handled immediately in-place using lib_aci_event_peek(...).
+        if (aci_evt.params.cmd_rsp.cmd_status != ACI_STATUS_SUCCESS) {
+            // printAciInfo will output the details (opcode and status).
+            abort(); // Adafruit stop on a failure, Nordic do not.
+        }
+        break;
+
+    case ACI_EVT_CONNECTED:
+        aci_state.data_credit_available = aci_state.data_credit_total;
+        timing.reset();
+        break;
+
+    case ACI_EVT_PIPE_STATUS:
+        timing.changeTiming(&aci_state);
+        break;
+
+    case ACI_EVT_TIMING:
+        // Link connection interval changed.
+        break;
+
+    case ACI_EVT_DISCONNECTED: // Disconnected or advertising timed out.
+        aci_state.data_credit_available = 0;
+        startAdvertising();
+        break;
+
+    case ACI_EVT_DATA_RECEIVED:
+        if (received_observer != NULL) {
+            aci_rx_data_t& data = aci_evt.params.data_received.rx_data;
+
+            // aci_evt.len is the packet length. In addition to the data-received bytes the packet contains:
+            // * the opcode, i.e. ACI_EVT_DATA_RECEIVED - aci_evt.evt_opcode.
+            // * the pipe number - aci_evt.params.data_received.rx_data.pipe_number.
+            // So the number of data-received bytes is aci_evt.len minus these two bytes.
+            received_observer->received(data.pipe_number, data.aci_data, aci_evt.len - 2);
+        }
+        break;
+
+    case ACI_EVT_DATA_CREDIT:
+        aci_state.data_credit_available += aci_evt.params.data_credit.credit;
+        break;
+
+    case ACI_EVT_PIPE_ERROR:
+        // printAciInfo will output the error details (pipe and code).
+        // PEER_ATT_ERROR means the peer device sent an error - this doesn't affect our credit.
+        // For all cases increment the credit available as no packet was sent.
+        if (aci_evt.params.pipe_error.error_code != ACI_STATUS_ERROR_PEER_ATT_ERROR) {
+            aci_state.data_credit_available++;
+        }
+        break;
+
+    case ACI_EVT_HW_ERROR:
+        // Start advertising again after an error in the nRF8001 firmware (printAciInfo will output the location of the error).
+        startAdvertising();
+        break;
+
+    default:
+        Serial << F("Unhandled event with opcode 0x") << _HEX(aci_evt.evt_opcode) << endl;
+        break;
+    }
+
+    return true;
 }
 
 bool BleCore::write(uint8_t pipe, size_t pipe_max_len, const uint8_t* buffer, size_t len) {
@@ -190,10 +192,10 @@ bool BleCore::write(uint8_t pipe, size_t pipe_max_len, const uint8_t* buffer, si
         aci_state.data_credit_available--;
         delay(35); // Required delay between sends.
     } else {
-        pollAci();
+        handleAciEvent();
     }
 
-    // Only the Adafruit code includes either the delay(...) or polling - Nordic has neither.
+    // Only the Adafruit code includes either the delay or the event handling call - Nordic has neither.
     // A 35ms delay seems massive (given the connection interval can be 7.5ms) so investigation could well show it's not required.
 
     return ok;
