@@ -62,7 +62,7 @@ void BleDeviceName::changeName(aci_state_t* aci_state) {
 bool BleCore::handleAciEvent() {
     hal_aci_evt_t aci_data;
 
-    if (lib_aci_event_get(&aci_state, &aci_data)) {
+    if (!lib_aci_event_get(&aci_state, &aci_data)) {
         // There's no event in the ACI event queue - so the caller could go into deep
         // sleep, waiting to be woken by an interrupt event occurring on the RDYN pin.
         return false;
