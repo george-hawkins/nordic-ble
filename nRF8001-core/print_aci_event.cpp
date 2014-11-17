@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 #include <Streaming.h>
-#include "print_aci_info.h"
+#include "print_aci_event.h"
 
 // From Bluetooth Core specification v4.0, Volume 2, Part D "Error Codes".
 const uint8_t REMOTE_USER_TERMINATED_CONNECTION = 0x13;

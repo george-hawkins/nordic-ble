@@ -17,7 +17,7 @@
 #include <Streaming.h>
 #include "BleCore.h"
 #include <aci_setup.h>
-#include "print_aci_info.h"
+#include "print_aci_event.h"
 
 // See also the second argument of lib_aci_init(..., debug) below.
 const bool BLE_DEBUG = true;
