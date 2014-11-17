@@ -40,7 +40,7 @@ static void printTiming(uint16_t interval, uint16_t latency, uint16_t timeout) {
 
     timeout *= 10; // Get ms.
 
-    Serial << F("xonnection_interval=") << interval <<
+    Serial << F("connection_interval=") << interval <<
         F("ms, slave_latency=") << latency <<
         F(", supervision_timeout=") << timeout << F("ms");
 }
