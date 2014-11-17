@@ -30,6 +30,21 @@ static Print& operator<<(Print& print, const Hex& hex) {
     return print;
 }
 
+static void printTiming(uint16_t interval, uint16_t latency, uint16_t timeout) {
+    // Note: multiplying by 100, in order to then divide by 125, would
+    // overflow uint16_t for the max interval value of 3200, i.e. 4s.
+
+    // Multiple by 1.25 to get ms.
+    interval *= 5;
+    interval *= 4;
+
+    timeout *= 10; // Get ms.
+
+    Serial << F("xonnection_interval=") << interval <<
+        F("ms, slave_latency=") << latency <<
+        F(", supervision_timeout=") << timeout << F("ms");
+}
+
 static bool isAdvertising(aci_evt_params_cmd_rsp_t& rsp) {
     if (rsp.cmd_status != ACI_STATUS_SUCCESS) {
         return false;
@@ -51,7 +66,7 @@ void printByteArray(const uint8_t* data, size_t len) {
     Serial << F("]");
 }
 
-void printAciInfo(aci_state_t& aci_state, aci_evt_t& aci_evt) {
+void printAciEvent(aci_evt_t& aci_evt) {
     switch (aci_evt.evt_opcode) {
     case ACI_EVT_CMD_RSP: {
         aci_evt_params_cmd_rsp_t& rsp = aci_evt.params.cmd_rsp;
@@ -97,25 +112,20 @@ void printAciInfo(aci_state_t& aci_state, aci_evt_t& aci_evt) {
         Serial << F(")") << endl;
         break;
     }
-    case ACI_EVT_TIMING:
-        Serial <<
-            F("TIMING (connection_interval=") << lib_aci_get_cx_interval_ms(&aci_state) <<
-            F("ms, slave_latency=") << aci_state.slave_latency <<
-            F(", supervision_timeout=") << aci_state.supervision_timeout * 10 << F("ms)") << endl;
-        break;
+    case ACI_EVT_TIMING: {
+        aci_evt_params_timing_t timing = aci_evt.params.timing;
 
-    // ACI_EVT_CONNECTED should use the same logic as ACI_EVT_TIMING to print out timing.
-    // However that requires pull request https://github.com/NordicSemiconductor/ble-sdk-arduino/pull/12
+        Serial << F("TIMING (");
+        printTiming(timing.conn_rf_interval, timing.conn_slave_rf_latency, timing.conn_rf_timeout);
+        Serial << F(")") << endl;
+        break;
+    }
     case ACI_EVT_CONNECTED: {
         aci_evt_params_connected_t connected = aci_evt.params.connected;
-        uint32_t interval_ms = connected.conn_rf_interval;
 
-        interval_ms *= 125;
-        interval_ms /= 100;
-
-        Serial << F("CONNECTED (connection_interval=") << interval_ms <<
-            F("ms, slave_latency=") << connected.conn_slave_rf_latency <<
-            F(", supervision_timeout=") << connected.conn_rf_timeout * 10 << F("ms)") << endl;
+        Serial << F("CONNECTED (");
+        printTiming(connected.conn_rf_interval, connected.conn_slave_rf_latency, connected.conn_rf_timeout);
+        Serial << F(")") << endl;
         break;
     }
     case ACI_EVT_DISCONNECTED: {

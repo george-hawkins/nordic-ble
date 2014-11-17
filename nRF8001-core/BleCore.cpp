@@ -71,7 +71,7 @@ bool BleCore::handleAciEvent() {
     aci_evt_t& aci_evt = aci_data.evt;
 
     if (BLE_DEBUG) {
-        printAciInfo(aci_state, aci_evt);
+        printAciEvent(aci_evt);
     }
 
     // Note: the term "credit" seen at various points in this method is related to flow control.
@@ -93,7 +93,6 @@ bool BleCore::handleAciEvent() {
             }
             break;
         }
-
         case ACI_DEVICE_STANDBY:
             if (aci_evt.params.device_started.hw_error) {
                 // A fatal error occurred in the nRF8001 firmware - an ACI_EVT_HW_ERROR will follow with debug information.

@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef PRINT_ACI_INFO_H_
-#define PRINT_ACI_INFO_H_
+#ifndef PRINT_ACI_EVENT_H_
+#define PRINT_ACI_EVENT_H_
 
 #include <lib_aci.h>
 
-extern void printAciInfo(aci_state_t& aci_state, aci_evt_t& aci_evt);
+extern void printAciEvent(aci_evt_t& aci_evt);
 extern void printByteArray(const uint8_t* data, size_t len);
 
-#endif /* PRINT_ACI_INFO_H_ */
+#endif /* PRINT_ACI_EVENT_H_ */
